@@ -25,7 +25,7 @@ func init() {
 
 	// connect to mongo
 	client, err := mongo.Connect(context.TODO(), clientOption)
-	checkError(err)
+	CheckError(err)
 
 	fmt.Println("Database Connection: OK")
 
@@ -35,54 +35,55 @@ func init() {
 }
 
 // mongoDB helper - insert
-func insertOneMovie(movie models.Netflix) {
+func InsertOneMovie_helper(movie models.Netflix) {
 	inserted, err := collection.InsertOne(context.Background(), movie)
-	checkError(err)
+	CheckError(err)
 	fmt.Println("inserted movie: OK; movieID: ", inserted.InsertedID)
 }
 
-func updateOneMovie(movieID string) {
+func UpdateOneMovie_helper(movieID string) {
 	id, err := primitive.ObjectIDFromHex(movieID)
-	checkError(err)
+	CheckError(err)
 	filter := bson.M{"_id": id}
 	update := bson.M{"$set": bson.M{"whatched": true}}
 	result, err := collection.UpdateOne(context.Background(), filter, update)
-	checkError(err)
+	CheckError(err)
 	fmt.Println("updated one movie: OK; count: ",result.ModifiedCount)
 }
 
-func deleteOneMovie(movieID string) {
+func DeleteOneMovie_helper(movieID string) {
 	id, err := primitive.ObjectIDFromHex(movieID)
-	checkError(err)
+	CheckError(err)
 	filter := bson.M{"_id": id}
 	result, err := collection.DeleteOne(context.Background(), filter)
-	checkError(err)
+	CheckError(err)
 	fmt.Println("deleted one movie: OK; count: ", result.DeletedCount)
 }
 
-func deleteAllMovies() {
+func DeleteAllMovies_helper() int64 {
 	result, err := collection.DeleteMany(context.Background(), bson.D{{}})
-	checkError(err)
-	fmt.Println("deleted all movies: OK; count: ", result.DeletedCount)
+	CheckError(err)
+	// fmt.Println("deleted all movies: OK; count: ", result.DeletedCount)
+	return result.DeletedCount
 }
 
 func GetAllMovies_helper() []bson.M {
 	cursor, err := collection.Find(context.Background(), bson.D{{}})
+	CheckError(err)
 	defer cursor.Close(context.Background())
-	checkError(err)
 	// var movies []primitive.M
 	var movies []bson.M
 
 	for cursor.Next(context.Background()) {
 		var movie bson.M
 		err := cursor.Decode(&movie)
-		checkError(err)
+		CheckError(err)
 		movies = append(movies, movie)
 	}
 	return movies
 }
 
-func checkError(err error) {
+func CheckError(err error) {
 	if err != nil {
 		log.Fatalln(err)
 	}
